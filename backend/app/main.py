@@ -11,7 +11,7 @@ from app.errors import configure_error_handlers
 from app.services import configure_services
 from app.settings import load_settings, Settings
 from app.middleware import middleware_storage_lang
-from app.scheduler import configure_scheduler
+# from app.scheduler import configure_scheduler
 
 def configure_application(
         services: Container,
@@ -28,7 +28,7 @@ def configure_application(
     if is_development():
         configure_docs(app, settings)
 
-    configure_scheduler(app)
+    # configure_scheduler(app)
     return app
 
 
