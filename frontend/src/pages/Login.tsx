@@ -1,11 +1,11 @@
 import { useState } from "react";
 import "./Login.css"
-import { loginApi, signInApi } from "./api/api";
+import { loginApi, signInApi } from "../api/api";
 import { message } from 'antd';
 import { useLocation, useNavigate } from "react-router-dom";
-import { saveUserInfo } from "./utils/requireAuth";
-import { t } from './utils/i18n'
-import { SignUpDataType, UserType } from "./types/login";
+import { saveUserInfo } from "../utils/requireAuth";
+import { t } from '../utils/i18n'
+import { SignUpDataType, UserType } from "../types/login";
 
 
 

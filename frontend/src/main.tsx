@@ -2,10 +2,10 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import './utils/i18n'
-import Login from './Login.tsx';
+import Login from './pages/Login.tsx';
 import App from './App.tsx'
-import { Admin } from './Admin.tsx';
-import UserListPage from './userList.tsx';
+import { Admin } from './pages/Admin.tsx';
+import UserListPage from './pages/userList.tsx';
 
 
 const router = createBrowserRouter([

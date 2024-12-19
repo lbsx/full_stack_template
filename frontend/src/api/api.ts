@@ -1,11 +1,19 @@
 // api.ts
+import qs from 'qs';
 import { SignUpDataType, UserType } from "../types/login";
+import { TableParams } from '../types/common';
 // 登录接口返回的数据类型
 interface ApiResponse<T = string> {
     code: number
     message: string,
     data?: T
 }
+
+const getRandomuserParams = (params: TableParams) => ({
+    page: params.pagination?.current,
+    pageSize: params.pagination?.pageSize,
+    ...params,
+});
 async function request<T>(method: string, url: string, body: object = {}): Promise<ApiResponse<T>> {
     try {
         let requestBody: { method: string, headers: {}, body?: string } = {
@@ -41,8 +49,11 @@ export async function signInApi(signUpData: SignUpDataType): Promise<ApiResponse
     return request("POST", "/api/user", signUpData)
 
 }
-export async function getUsersApi<T>(page: number = 1, page_size: number = 20): Promise<ApiResponse<T>> {
-    return request("GET", `/api/users?page=${page}&page_size=${page_size}`)
+export async function getUsersApi<T>(tableParams: TableParams): Promise<ApiResponse<T>> {
+    console.log(tableParams);
+    console.log(qs.stringify(getRandomuserParams(tableParams)));
+    
+    return request("GET", `/api/users?${qs.stringify(getRandomuserParams(tableParams))}`)
 }
 export async function deleteUserApi(userid: number): Promise<ApiResponse> {
     return request("DELETE", `/api/user/${userid}`)

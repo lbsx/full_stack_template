@@ -30,6 +30,8 @@
         "guest": "访客"
     },
     "status": "状态",
+    "enable": "正常",
+    "disable": "禁用",
     "action": "操作",
     "editUser": "编辑用户"
 }
