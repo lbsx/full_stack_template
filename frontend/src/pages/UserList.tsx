@@ -1,26 +1,27 @@
 import { useState, useEffect } from 'react';
-import { Table, Button, Modal, Form, Input, Select, Switch, message, Popconfirm, Pagination, TableProps, GetProp } from 'antd';
+import { Table, Button, Switch, message, Popconfirm, TableProps } from 'antd';
 
-import { deleteUserApi, getUsersApi, updateUserApi } from '../api/api';
-import { Role, roleName } from '../utils/requireAuth';
+import { deleteUserApi, getUsersApi } from '../api/api';
+import { Role, roleName, useRequireAuth } from '../utils/requireAuth';
 import { t } from '../utils/i18n';
 import { PaginationData, TableParams } from "../types/common"
-const { Option } = Select;
+import UserDetailDrawer from './UserDetail';
+import { updateUser } from '../api/user';
 type ColumnsType<T extends object = object> = TableProps<T>['columns'];
-type TablePaginationConfig = Exclude<GetProp<TableProps, 'pagination'>, boolean>;
 
 
 function UserListPage() {
-    const [visible, setVisible] = useState(false);
-    const [userList, setUserList] = useState<UserDetail[]>([])
-    const [form] = Form.useForm<UserDetail>();
+    useRequireAuth(Role.admin);
+    const [drawerOpen, setDrawerOpen] = useState(false);
+    const [userList, setUserList] = useState<UserDetailType[]>([])
     const [loading, setLoading] = useState(false);
+    const [userDetailData, setUserDetailData] = useState<UserDetailType>();
     const [tableParams, setTableParams] = useState<TableParams>({
         pagination: {
             current: 1,
             pageSize: 10,
             total: 0,
-            showTotal:(total) => `${total}`
+            showTotal: (total) => `${total}`
         },
     });
     useEffect(() => {
@@ -30,17 +31,17 @@ function UserListPage() {
     const getUsers = () => {
         setLoading(true)
         // 在组件加载时从后端接口获取数据
-        getUsersApi<PaginationData<UserDetail>>(tableParams).then(res => {
+        getUsersApi<PaginationData<UserDetailType>>(tableParams).then(res => {
             if (res.code == 0 && res.data) {
                 setUserList(res.data.data)
                 setLoading(false)
                 setTableParams({
                     ...tableParams,
                     pagination: {
-                      ...tableParams.pagination,
-                      total: res.data.total,
+                        ...tableParams.pagination,
+                        total: res.data.total,
                     },
-                  });
+                });
             } else {
                 message.error(res.message)
             }
@@ -49,7 +50,7 @@ function UserListPage() {
     }
 
 
-    const columns: ColumnsType<UserDetail> = [
+    const columns: ColumnsType<UserDetailType> = [
         {
             title: t('login.username'),
             dataIndex: 'username',
@@ -74,10 +75,21 @@ function UserListPage() {
                 { text: t('enable'), value: true },
                 { text: t('disable'), value: false },
             ],
-            render: (_text: string, record: UserDetail) => (
+            render: (_text: string, record: UserDetailType) => (
                 <Switch checked={record.status} onChange={(checked) => {
-                    record.status = checked
-                    updateUser(record)
+                    const updatedUserList = userList.map((user) =>
+                        user.id === record.id ? { ...user, status: checked } : user
+                    );
+                    setUserList(updatedUserList);
+                    updateUser({ ...record, status: checked }, () => {
+
+                        // update fail, revert the changes
+                        const revertedUserList = userList.map((user) =>
+                            user.id === record.id ? { ...user, status: !checked } : user
+                        );
+                        setUserList(revertedUserList); // 恢复修改前的状态
+
+                    });
                 }} />
             ),
         },
@@ -86,17 +98,17 @@ function UserListPage() {
             dataIndex: 'role',
             key: 'role',
             filters: Object.entries(roleName).map(([key, value]) => ({
-                text: value,  
-                value: key,   
+                text: value,
+                value: key,
             })),
             render: (role: number) => { return roleName[role] },
         },
         {
             title: t('action'),
             key: 'action',
-            render: (_text: string, record: UserDetail) => (
+            render: (_text: string, record: UserDetailType) => (
                 <>
-                    <Button type="default" onClick={() => handleEdit(record)}>{t('edit')}</Button>
+                    <Button type="default" onClick={() => showDetail(record)}>{t('detail')}</Button>
                     <Popconfirm
                         title="Are you sure delete this?"
                         onConfirm={() => deleteUser(record)}
@@ -114,11 +126,11 @@ function UserListPage() {
 
 
 
-    const handleEdit = (record: UserDetail) => {
-        form.setFieldsValue(record);
-        setVisible(true);
+    const showDetail = (record: UserDetailType) => {
+        setUserDetailData(record);
+        setDrawerOpen(true);
     };
-    const deleteUser = (record: UserDetail) => {
+    const deleteUser = (record: UserDetailType) => {
         deleteUserApi(record.id).then(res => {
             if (res.code === 0) {
                 message.success(res.message)
@@ -129,25 +141,7 @@ function UserListPage() {
         }
         )
     }
-    function updateUser(user: UserDetail) {
-        updateUserApi(user).then(res => {
-            if (res.code === 0) {
-                message.success(res.message)
-                getUsers()
-            } else {
-                message.error(res.message)
-            }
-        })
-    }
 
-    const editHandleOk = () => {
-        form.validateFields().then(values => {
-            updateUser(values)
-            setVisible(false);
-        }).catch(errorInfo => {
-            console.log('Validate Failed:', errorInfo);
-        });
-    };
     useEffect(getUsers, [
         tableParams.pagination?.current,
         tableParams.pagination?.pageSize,
@@ -155,7 +149,7 @@ function UserListPage() {
         tableParams?.sortField,
         JSON.stringify(tableParams.filters),
     ]);
-    const handleTableChange: TableProps<UserDetail>['onChange'] = (pagination, filters, sorter) => {
+    const handleTableChange: TableProps<UserDetailType>['onChange'] = (pagination, filters, sorter) => {
         setTableParams({
             pagination,
             filters,
@@ -173,43 +167,12 @@ function UserListPage() {
             {/* <Button type="primary" onClick={() => setVisible(true)}>Add User</Button> */}
             <Table dataSource={userList} columns={columns}
                 pagination={tableParams.pagination}
-                
+
                 loading={loading}
                 onChange={handleTableChange}
                 rowKey="id" scroll={{ y: 400 }} />
-            
-            <Modal
-                title={t('editUser')}
-                open={visible}
-                onOk={editHandleOk}
-                onCancel={() => setVisible(false)}
-            >
-                <Form form={form} layout="vertical">
-                    <Form.Item name="id" hidden>
-                        <Input />
-                    </Form.Item>
-                    <Form.Item name="username" label={t('login.username')} rules={[{ required: true }]}>
-                        <Input />
-                    </Form.Item>
-                    <Form.Item name="email" label={t('login.email')} rules={[{ required: false }]}>
-                        <Input />
-                    </Form.Item>
-                    <Form.Item name="phone" label={t('login.phone')} rules={[{ required: false }]}>
-                        <Input />
-                    </Form.Item>
-                    <Form.Item name="status" label={t("status")} valuePropName="checked">
-                        <Switch />
-                    </Form.Item>
-                    <Form.Item name="role" label={t('role.title')} rules={[{ required: true }]}>
-                        <Select>
-                            <Option value={Role.admin}>{roleName[Role.admin]}</Option>
-                            <Option value={Role.special}>{roleName[Role.special]}</Option>
-                            <Option value={Role.user}>{roleName[Role.user]}</Option>
-                            <Option value={Role.guest}>{roleName[Role.guest]}</Option>
-                        </Select>
-                    </Form.Item>
-                </Form>
-            </Modal>
+
+            <UserDetailDrawer open={drawerOpen} userDetail={userDetailData} onClose={() => { getUsers(); setDrawerOpen(false) }} />
         </div>
     );
 };

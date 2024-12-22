@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Button, message, Input, Space, Layout, Menu, theme } from 'antd';
+import { Button, Layout, Menu, theme } from 'antd';
 import { ToolOutlined, UserOutlined, MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 import { t } from '../utils/i18n'
 import { useRequireAuth, isAdmin } from "../utils/requireAuth";
@@ -27,7 +27,7 @@ export function Admin() {
                     mode="inline"
                     defaultSelectedKeys={[currentRoute]}
                     items={[
-                        { 'key': 'tool', icon: <ToolOutlined />, label: <Link to="tool" >{t('admin.tool')}</Link> },
+                        // { 'key': 'tool', icon: <ToolOutlined />, label: <Link to="tool" >{t('admin.tool')}</Link> },
                         { 'key': 'user', icon: <UserOutlined />, label: <Link to="user" >{t('admin.user')}</Link> },
                     ]}
                 />

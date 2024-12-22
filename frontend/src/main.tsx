@@ -5,7 +5,7 @@ import './utils/i18n'
 import Login from './pages/Login.tsx';
 import App from './App.tsx'
 import { Admin } from './pages/Admin.tsx';
-import UserListPage from './pages/userList.tsx';
+import UserListPage from './pages/UserList.tsx';
 
 
 const router = createBrowserRouter([

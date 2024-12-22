@@ -1,9 +1,9 @@
 from blacksheep import FromHeader, FromJSON, FromQuery, delete, get, post, bad_request, status_code, file, auth, Request
 from guardpost import Identity
-from sqlalchemy import func, select
+from sqlalchemy import desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.data_type import ApiResponse, CreateUser, PaginationData, UpdateUser
-from utils.common import password_encrypt
+from app.data_type import ApiResponse, CreateUser, PaginationData, SearchParams, UpdateUser
+from utils import password_encrypt, parse_query_params
 
 from data.dbmodel import User
 from app.auth import Role
@@ -61,14 +61,31 @@ async def delete_user(userid: int, session: AsyncSession):
 
 @auth(Role.admin)
 @get("/api/users")
-async def get_users(session: AsyncSession, page: FromQuery[int] = FromQuery(1), page_size: FromQuery[int] = FromQuery(20)):
+async def get_users(session: AsyncSession, req: Request):
+    search_params = SearchParams(parse_query_params(req.query))
+    page = search_params.page
+    page_size = search_params.pageSize
     data = PaginationData()
-    data.page = page.value
-    data.page_size = page_size.value
+    data.page = page
+    data.page_size = page_size
     async with session:
-        result = await session.execute(select(func.count("*")).select_from(User))
-        data.total = result.scalar()
-        result = await session.execute(select(User).offset((page.value - 1) * page_size.value).limit(page_size.value))
+
+        query = select(User)
+        if search_params.filters:
+            role = search_params.filters.role
+            if role:
+                query = query.where(User.role.in_(role))
+            status = search_params.filters.status
+            if status:
+                query = query.where(User.status.in_(status))
+        if search_params.sortField:
+            order = getattr(User, search_params.sortField)
+            if search_params.sortOrder == "descend":
+                order = desc(order)
+            query = query.order_by(order)
+        total_query = select(func.count("*")).select_from(query.subquery())
+        data.total = await session.scalar(total_query)
+        result = await session.execute(query.offset((page - 1) * page_size).limit(page_size))
         users = list()
         for user in result.scalars().all():
             users.append(user.detail())

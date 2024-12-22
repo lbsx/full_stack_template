@@ -33,5 +33,6 @@
     "enable": "正常",
     "disable": "禁用",
     "action": "操作",
+    "detail": "详情",
     "editUser": "编辑用户"
 }

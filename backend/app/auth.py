@@ -6,7 +6,7 @@ from data.dbmodel import User
 from app.settings import Settings
 from blacksheep import Application, Request
 from guardpost import AuthenticationHandler, AuthorizationContext, Identity, Policy, Requirement
-from utils.common import get_logger, serializer_decrypt
+from utils import get_logger, serializer_decrypt
 from .config import AUTH_SECRET_KEY
 
 

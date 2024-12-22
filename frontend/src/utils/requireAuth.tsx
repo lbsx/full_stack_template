@@ -16,7 +16,8 @@ export const roleName: { [key: number]: string } = {
     [Role.guest]: t("role.guest"),
 };
 function isLoggedIn(): boolean {
-    return localStorage.getItem("user") !== null
+    // return localStorage.getItem("user") !== null
+    return document.cookie.includes("token")
 }
 export function saveUserInfo(user: UserType) {
     localStorage.setItem("user", JSON.stringify(user))
@@ -35,7 +36,7 @@ export function isAuthenticationPage(page: React.ReactNode, role: Role) {
     }
     return page
 }
-export function useRequireAuth() {
+export function useRequireAuth(role: Role = Role.guest) {
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -43,8 +44,12 @@ export function useRequireAuth() {
         if (!isLoggedIn()) {
             navigate('/login', { replace: true, state: { from: location } });
         }
+        if (getUser().role < role) {
+            navigate('/403', { replace: true, state: { from: location } });
+        }
     }, [navigate, location]);
 
     // 返回空对象，以便在组件树中能正常使用此Hook
     return {};
 };
+

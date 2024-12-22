@@ -1,4 +1,4 @@
-interface UserDetail {
+interface UserDetailType {
     id: number;
     username: string;
     email: string;

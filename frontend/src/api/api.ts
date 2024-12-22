@@ -50,16 +50,13 @@ export async function signInApi(signUpData: SignUpDataType): Promise<ApiResponse
 
 }
 export async function getUsersApi<T>(tableParams: TableParams): Promise<ApiResponse<T>> {
-    console.log(tableParams);
-    console.log(qs.stringify(getRandomuserParams(tableParams)));
-    
     return request("GET", `/api/users?${qs.stringify(getRandomuserParams(tableParams))}`)
 }
 export async function deleteUserApi(userid: number): Promise<ApiResponse> {
     return request("DELETE", `/api/user/${userid}`)
 }
 
-export async function updateUserApi(user: UserDetail): Promise<ApiResponse> {
+export async function updateUserApi(user: UserDetailType): Promise<ApiResponse> {
     return request("POST", `/api/user/${user.id}`, user)
 
 }

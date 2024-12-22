@@ -1,13 +1,10 @@
+from collections import defaultdict
 from imghdr import tests as pic_format_function_list
 from contextlib import asynccontextmanager
 from functools import wraps
-import hashlib
 import logging
 import time
-from blacksheep.server.dataprotection import get_serializer
-from essentials.exceptions import UnauthorizedException
 import httpx
-import jwt
 
 
 def patch_json():
@@ -19,28 +16,6 @@ def patch_json():
 
 def get_logger():
     return logging.getLogger("uvicorn")
-
-
-def decrypt(token: str, secret_key, algorithms: list = ['HS256']):
-    try:
-        ret = jwt.decode(token, secret_key, algorithms=algorithms)
-        return ret
-    except jwt.exceptions.ExpiredSignatureError as err:
-        return str(err)
-
-
-def encrypt(payload: dict, secret_key, algorithms: list = 'HS256'):
-    token = jwt.encode(payload, key=secret_key, algorithm=algorithms)
-    return token
-
-
-def password_encrypt(plaintext):
-    sha256_hash = hashlib.sha256()
-    sha256_hash.update(plaintext.encode('utf-8'))
-    return sha256_hash.hexdigest()[20:]
-
-
-secret_serializer = get_serializer("test", purpose="pages")
 
 
 def cache(expire: int = 3600):
@@ -56,13 +31,6 @@ def cache(expire: int = 3600):
 
         return wrapped
     return wrapper
-
-
-def serializer_decrypt(s: str):
-    try:
-        return secret_serializer.loads(s)
-    except:
-        raise UnauthorizedException()
 
 
 _client = None
@@ -81,6 +49,51 @@ def get_pic_format(pic_bytes: bytes):
         fmt = func(pic_bytes, '')
         if fmt:
             return fmt
+
+
+def _convert_indexed_dict_to_list(d: dict):
+    """
+    index dict to list
+    eg:
+    """
+    if not isinstance(d, dict):
+        return
+    for key in d.keys():
+        value = d[key]
+        try:
+            # is array
+            items = sorted([(int(k), v)
+                           for k, v in value.items()], key=lambda x: x[0])
+            for i, item in enumerate(items):
+                if i != item[0]:
+                    # not increasing from zero
+                    return
+            d[key] = [i[1] for i in items]
+        except:
+            # is dict
+            _convert_indexed_dict_to_list(value)
+
+
+def parse_query_params(parsed: dict):
+    """
+    Parse the query dict into a nested dictionary format.
+    """
+    result = defaultdict(dict)
+
+    for key, value in parsed.items():
+        # ['filters', '1'] = [1]
+        # Parse keys like 'filters[role][0]' into ['filters', 'role', '0']
+        keys = key.replace(
+            '][', '/').replace('[', '/').replace(']', '').split('/')
+        d = result
+        for key in keys[:-1]:
+            d[key] = d.get(key, dict())
+            d = d[key]
+        d[keys[-1]] = value[0]  # all value is list, take first
+
+    _convert_indexed_dict_to_list(result)
+
+    return dict(result)
 
 
 if __name__ == "__main__":

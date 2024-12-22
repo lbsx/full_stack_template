@@ -9,7 +9,7 @@ from guardpost import Identity
 from app.config import AUTH_SECRET_KEY
 from app.data_type import ApiResponse, LoginData
 from data.dbmodel import User
-from utils.common import get_logger, password_encrypt, secret_serializer
+from utils import password_encrypt, secret_serializer
 from app.auth import Role
 
 
