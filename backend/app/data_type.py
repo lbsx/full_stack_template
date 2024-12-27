@@ -44,11 +44,13 @@ class UpdateUser(BaseModel):
 class FilterFields:
     status: list[int]
     role: list[int]
+    username: str
 
 @dataclass
 class SearchParams:
     page: int
     pageSize: int
+    username: str
     filters: Optional[FilterFields]
     sortOrder: Optional[str]
     sortField: Optional[str]
@@ -66,5 +68,8 @@ class SearchParams:
             role = filters.get("role")
             if role:
                 role = [int(i) for i in role]
-            filters = FilterFields(status=status, role=role)
+            username = filters.get("username")
+            if username:
+                username = username[0]
+            filters = FilterFields(status=status, role=role, username=username)
         self.filters = filters

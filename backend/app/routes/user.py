@@ -71,6 +71,7 @@ async def get_users(session: AsyncSession, req: Request):
     async with session:
 
         query = select(User)
+
         if search_params.filters:
             role = search_params.filters.role
             if role:
@@ -78,6 +79,9 @@ async def get_users(session: AsyncSession, req: Request):
             status = search_params.filters.status
             if status:
                 query = query.where(User.status.in_(status))
+            username = search_params.filters.username
+            if username:
+                query = query.where(User.username.like(f"%{username}%"))
         if search_params.sortField:
             order = getattr(User, search_params.sortField)
             if search_params.sortOrder == "descend":

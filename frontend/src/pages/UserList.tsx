@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Table, Button, Switch, message, Popconfirm, TableProps } from 'antd';
+import { Table, Button, Switch, message, Popconfirm, TableProps, Space, Input } from 'antd';
 
 import { deleteUserApi, getUsersApi } from '../api/api';
 import { Role, roleName, useRequireAuth } from '../utils/requireAuth';
@@ -7,7 +7,9 @@ import { t } from '../utils/i18n';
 import { PaginationData, TableParams } from "../types/common"
 import UserDetailDrawer from './UserDetail';
 import { updateUser } from '../api/user';
+import { FilterDropdownProps, TableRowSelection } from 'antd/es/table/interface';
 type ColumnsType<T extends object = object> = TableProps<T>['columns'];
+
 
 
 function UserListPage() {
@@ -21,13 +23,22 @@ function UserListPage() {
             current: 1,
             pageSize: 10,
             total: 0,
-            showTotal: (total) => `${total}`
+            showTotal: (total) => `${total}`,
+            // pageSizeOptions: ['10', '20', '50', '100'],
         },
     });
     useEffect(() => {
         getUsers();
     }, []);
+    const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+    const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
+        setSelectedRowKeys(newSelectedRowKeys);
+    };
 
+    const rowSelection: TableRowSelection<UserDetailType> = {
+        selectedRowKeys,
+        onChange: onSelectChange,
+    };
     const getUsers = () => {
         setLoading(true)
         // 在组件加载时从后端接口获取数据
@@ -48,7 +59,46 @@ function UserListPage() {
         }
         )
     }
-
+    const filterDropDown = (dataIndex: string) => {
+        return ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }: FilterDropdownProps) => (
+            <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
+                <Input
+                    // ref={searchInput}
+                    placeholder={`Search ${dataIndex}`}
+                    value={selectedKeys[0]}
+                    onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+                    onPressEnter={() => { }}
+                    style={{ marginBottom: 8, display: 'block' }}
+                />
+                <Space>
+                    <Button
+                        onClick={() => {
+                            if (clearFilters) {
+                                clearFilters()
+                                setTableParams({
+                                    ...tableParams,
+                                    [dataIndex]: "",
+                                })
+                            }
+                        }}
+                        size="small"
+                        style={{ width: 90 }}
+                    >
+                        Reset
+                    </Button>
+                    <Button
+                        type="primary"
+                        size="small"
+                        onClick={async () => {
+                            confirm({ closeDropdown: false });
+                        }}
+                    >
+                        Filter
+                    </Button>
+                </Space>
+            </div>
+        )
+    }
 
     const columns: ColumnsType<UserDetailType> = [
         {
@@ -56,6 +106,7 @@ function UserListPage() {
             dataIndex: 'username',
             key: 'username',
             sorter: true,
+            filterDropdown: filterDropDown('username'),
         },
         {
             title: t('login.email'),
@@ -167,7 +218,7 @@ function UserListPage() {
             {/* <Button type="primary" onClick={() => setVisible(true)}>Add User</Button> */}
             <Table dataSource={userList} columns={columns}
                 pagination={tableParams.pagination}
-
+                rowSelection={rowSelection}
                 loading={loading}
                 onChange={handleTableChange}
                 rowKey="id" scroll={{ y: 400 }} />
