@@ -13,6 +13,7 @@ from app.settings import load_settings, Settings
 from app.middleware import middleware_storage_lang
 # from app.scheduler import configure_scheduler
 
+
 def configure_application(
         services: Container,
         settings: Settings,
@@ -29,6 +30,8 @@ def configure_application(
         configure_docs(app, settings)
 
     # configure_scheduler(app)
+    app.serve_files(settings.static_files_path,
+                    root_path=settings.root_path, fallback_document="index.html")
     return app
 
 

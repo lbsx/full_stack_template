@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { Button, Layout, Menu, theme } from 'antd';
-import { ToolOutlined, UserOutlined, MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
+import { UserOutlined, MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 import { t } from '../utils/i18n'
 import { useRequireAuth, isAdmin } from "../utils/requireAuth";
 import { Link, Outlet, useLocation } from "react-router-dom";

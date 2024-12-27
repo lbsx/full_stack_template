@@ -15,7 +15,7 @@ export default defineConfig({
     }),
 
   ],
-  base: '/jedi/',
+  base: '/jedi',
   build: {
     rollupOptions: {
       output: {

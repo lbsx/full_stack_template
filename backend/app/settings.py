@@ -34,7 +34,11 @@ class Settings(BaseSettings):
 
     model_config = SettingsConfigDict(env_prefix='APP_')
 
-    db_connection_string:str = "sqlite+aiosqlite:///data/web.db"
+    db_connection_string: str = "sqlite+aiosqlite:///data/web.db"
+
+    static_files_path: str = "/home/leib/code/py/web/full_stack_template/frontend/dist"
+    root_path: str = "/jedi"
+    
 
 
 def load_settings() -> Settings:
