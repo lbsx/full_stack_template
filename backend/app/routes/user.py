@@ -3,9 +3,9 @@ from guardpost import Identity
 from sqlalchemy import desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.data_type import ApiResponse, CreateUser, PaginationData, SearchParams, UpdateUser
+from data import UserProject, Project, User
 from utils import password_encrypt, parse_query_params
 
-from data.dbmodel import User
 from app.auth import Role
 
 
@@ -96,3 +96,17 @@ async def get_users(session: AsyncSession, req: Request):
         data.data = users
 
     return ApiResponse(code=0, message="success", data=data.model_dump())
+
+
+@auth(Role.user)
+@get("/api/user/{userid}/projects")
+async def get_user_projects(session: AsyncSession, userid: int):
+    async with session:
+        result = await session.execute(select(UserProject.id).add_columns(Project.id, User.username, Project.name.label('project_name'))
+                                       .join(User, User.id == UserProject.user_id)
+                                       .join(Project, Project.id == UserProject.project_id)
+                                       .where(UserProject.user_id == userid))
+        projects = list()
+        for row in result.all():
+            projects.append({"id": row.id, "project_name": row.project_name, })
+    return ApiResponse(code=0, message="success", data=projects)

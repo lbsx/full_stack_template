@@ -16,12 +16,15 @@ web framework to start Web APIs.
 alembic init alembic
 # config alembic/env.py
 from data.dbmodel import metadata
+from data.project import Project, UserProject
+from data.user import User
 target_metadata = metadata
 # generate migrations files
 alembic revision --autogenerate -m "message"
 # apply migrations to database
 alembic upgrade head  
 # alembic downgrade head  # rollback
+# alembic upgrade head --sql
 ```
 #### env and run
 ```bash

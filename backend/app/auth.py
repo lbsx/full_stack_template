@@ -2,7 +2,7 @@ from enum import Enum
 from typing import Optional, Sequence
 from blacksheep import Application
 import jwt
-from data.dbmodel import User
+from data.user import User
 from app.settings import Settings
 from blacksheep import Application, Request
 from guardpost import AuthenticationHandler, AuthorizationContext, Identity, Policy, Requirement
