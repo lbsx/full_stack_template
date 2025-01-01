@@ -6,13 +6,14 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { saveUserInfo } from "../utils/requireAuth";
 import { t } from '../utils/i18n'
 import { SignUpDataType, UserType } from "../types/login";
+import { useUserActions } from "../store/userStore";
 
 
 
 export default function Login() {
     const navigate = useNavigate();
     const { state } = useLocation();
-
+    const { setUserInfo } = useUserActions();
     const [messageApi, contextHolder] = message.useMessage();
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
@@ -60,6 +61,7 @@ export default function Login() {
         if (data.code === 0) {
             messageApi.success(t("success"))
             saveUserInfo(data.data as UserType)
+            setUserInfo(data.data as UserType)
             const redirectUrl = (new URLSearchParams(window.location.search)).get("url")
             if (redirectUrl) {
                 window.location.href = window.origin + redirectUrl

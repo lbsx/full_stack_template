@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { t } from "../utils/i18n";
 import { Role, roleName, useRequireAuth } from "../utils/requireAuth";
 import { updateUser } from "../api/user";
+import { useUserInfo } from "../store/userStore";
 const { Option } = Select;
 
 interface UserDetailProps {
@@ -12,12 +13,15 @@ interface UserDetailProps {
 }
 function UserDetailDrawer({ open, userDetail, onClose }: UserDetailProps) {
     useRequireAuth(Role.admin);
+    const userInfo = useUserInfo();
     const [form] = Form.useForm<UserDetailType | undefined>();
     const size: DrawerProps['size'] = "large";
 
     useEffect(() => {
         if (userDetail)
             form.setFieldsValue(userDetail);
+        console.log("store:",userInfo);
+        
     }, [open, userDetail]);
     const handlerOk = () => {
         if (form) {
@@ -26,7 +30,6 @@ function UserDetailDrawer({ open, userDetail, onClose }: UserDetailProps) {
             });
         }
         onClose();
-
     }
 
     return (

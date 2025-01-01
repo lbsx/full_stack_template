@@ -17,3 +17,11 @@ export interface TableParams {
     sortOrder?: SorterResult<any>['order'];
     filters?: Parameters<GetProp<TableProps, 'onChange'>>[1];
 }
+
+
+export enum StorageEnum {
+	UserInfo = "userInfo",
+	UserToken = "userToken",
+	Settings = "settings",
+	I18N = "i18nextLng",
+}

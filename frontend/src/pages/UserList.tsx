@@ -18,13 +18,15 @@ function UserListPage() {
     const [userList, setUserList] = useState<UserDetailType[]>([])
     const [loading, setLoading] = useState(false);
     const [userDetailData, setUserDetailData] = useState<UserDetailType>();
+    const pageSizeOptions = [10, 20, 50, 100];
     const [tableParams, setTableParams] = useState<TableParams>({
         pagination: {
             current: 1,
             pageSize: 10,
             total: 0,
             showTotal: (total) => `${total}`,
-            // pageSizeOptions: ['10', '20', '50', '100'],
+            showSizeChanger: true,
+            pageSizeOptions: pageSizeOptions,
         },
     });
     useEffect(() => {
@@ -51,6 +53,7 @@ function UserListPage() {
                     pagination: {
                         ...tableParams.pagination,
                         total: res.data.total,
+                        showTotal: (total) => `${total}`,
                     },
                 });
             } else {
@@ -60,7 +63,7 @@ function UserListPage() {
         )
     }
     const filterDropDown = (dataIndex: string) => {
-        return ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }: FilterDropdownProps) => (
+        return ({ setSelectedKeys, selectedKeys, confirm, clearFilters }: FilterDropdownProps) => (
             <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
                 <Input
                     // ref={searchInput}
