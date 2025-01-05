@@ -28,12 +28,10 @@ alembic upgrade head
 ```
 #### env and run
 ```bash
-# install poetry
-pip install poetry
-# install dependencies
-poetry install
+# install uv
+pip install uv
 # run application
-python dev.py
+uv run dev.py # uv run --python 3.12 dev.py
 ```
 
 
